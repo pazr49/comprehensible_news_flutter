@@ -9,11 +9,11 @@ class ArticleItem extends StatelessWidget {
 
   String getFlagEmoji(String languageCode) {
   switch (languageCode) {
-    case 'es':
+    case 'Spanish':
       return '🇨🇴'; // Colombian flag for Spanish
-    case 'en':
+    case 'English':
       return '🇬🇧'; // English flag
-    case 'fr':
+    case 'French':
       return '🇫🇷'; // French flag
     // Add more cases as needed
     default:

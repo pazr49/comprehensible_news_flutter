@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Language'),
-                items: ['en', 'es', 'fr']
+                items: ['Spanish', 'French']
                     .map((language) => DropdownMenuItem(
                           value: language,
                           child: Text(language),
