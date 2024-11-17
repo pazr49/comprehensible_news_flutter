@@ -28,7 +28,7 @@ class Article {
       targetLanguage: json['language'] ?? '',
       imageUrl: json['image_url'] ?? '',
     );
-    // Use a logging framework instead of print
+    // Use a logging framework instead of print statements
     final log = Logger('Article');
     return article;
   }
