@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Article App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Noto Color Emoji',
       ),
       home: HomeScreen(),
     );

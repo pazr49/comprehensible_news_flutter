@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
 import '../models/article.dart';
 import '../widgets/article_item.dart';
+import '../services/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -23,8 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final result = await showDialog<Map<String, String?>>(
       context: context,
       builder: (context) {
-        String? level;
-        String? language;
+        String? level = selectedLevel;
+        String? language = selectedLanguage;
         return AlertDialog(
           title: Text('Filter Articles'),
           content: Column(
@@ -33,11 +35,12 @@ class _HomeScreenState extends State<HomeScreen> {
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Level'),
                 items: ['A1', 'A2', 'B1']
-                    .map((level) => DropdownMenuItem(
-                          value: level,
-                          child: Text(level),
+                    .map((lvl) => DropdownMenuItem(
+                          value: lvl,
+                          child: Text(lvl),
                         ))
                     .toList(),
+                value: level,
                 onChanged: (value) {
                   level = value;
                 },
@@ -45,11 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Language'),
                 items: ['Spanish', 'French']
-                    .map((language) => DropdownMenuItem(
-                          value: language,
-                          child: Text(language),
+                    .map((lang) => DropdownMenuItem(
+                          value: lang,
+                          child: Text(lang),
                         ))
                     .toList(),
+                value: language,
                 onChanged: (value) {
                   language = value;
                 },
@@ -59,16 +63,13 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog without changes
               },
               child: Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop({
-                  'level': level,
-                  'language': language,
-                });
+                Navigator.of(context).pop({'level': level, 'language': language});
               },
               child: Text('Apply'),
             ),
@@ -81,52 +82,77 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         selectedLevel = result['level'];
         selectedLanguage = result['language'];
-        articlesFuture = ApiService.fetchArticles().then((articles) {
-          return articles.where((article) {
-            final matchesLevel = selectedLevel == null || article.targetLevel == selectedLevel;
-            final matchesLanguage = selectedLanguage == null || article.targetLanguage == selectedLanguage;
-            return matchesLevel && matchesLanguage;
-          }).toList();
-        });
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.grey[200], // Set the background color to a darker grey
-      child: Scaffold(
-        backgroundColor: Colors.transparent, // Make Scaffold background transparent
-        appBar: AppBar(
-          title: Text('Comprehensible news', style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.filter_list),
-              onPressed: _openFilterDialog,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Articles'),
+        actions: [
+          if (selectedLevel != null || selectedLanguage != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Center(
+                child: Text(
+                  '${selectedLevel ?? ''} ${selectedLanguage ?? ''}'.trim(),
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
             ),
-          ],
-        ),
-        body: FutureBuilder<List<Article>>(
-          future: articlesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (snapshot.hasData) {
-              final articles = snapshot.data!;
-              return ListView.builder(
-                itemCount: articles.length,
-                itemBuilder: (context, index) {
-                  return ArticleItem(article: articles[index]);
-                },
-              );
-            } else {
-              return Center(child: Text('No data'));
+          IconButton(
+            icon: Icon(Icons.filter_list),
+            onPressed: _openFilterDialog,
+          ),
+        ],
+      ),
+      body: FutureBuilder<List<Article>>(
+        future: articlesFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Article> articles = snapshot.data!;
+
+            // Apply filters if any
+            if (selectedLevel != null || selectedLanguage != null) {
+              articles = articles.where((article) {
+                final matchesLevel = selectedLevel == null || article.targetLevel == selectedLevel;
+                final matchesLanguage = selectedLanguage == null || article.targetLanguage == selectedLanguage;
+                return matchesLevel && matchesLanguage;
+              }).toList();
             }
-          },
-        ),
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                int columns = (constraints.maxWidth / 360).floor();
+                columns = columns > 1 ? columns : 1;
+                double aspectRatio = 1;
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(10),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    childAspectRatio: aspectRatio,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: articles.length,
+                  itemBuilder: (context, index) {
+                    return AspectRatio(
+                      aspectRatio: aspectRatio,
+                      child: ArticleItem(article: articles[index]),
+                    );
+                  },
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Error loading articles'));
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
   }

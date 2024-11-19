@@ -37,50 +37,55 @@ class ArticleDetailScreen extends StatelessWidget {
                     backgroundColor: Color(0xFFF5F5F5),
                   ),
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              article.imageUrl,
-                              height: 200,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Text(
-                            article.title,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          ...jsonDecode(article.content).map<Widget>((contentItem) {
-                            if (contentItem['type'] == 'image') {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: Center(
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: 800),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: AspectRatio(
+                                aspectRatio: 16 / 9,
                                 child: Image.network(
-                                  contentItem['content'],
+                                  article.imageUrl,
                                   fit: BoxFit.cover,
                                 ),
-                              );
-                            } else if (contentItem['type'] == 'paragraph') {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                                child: Text(
-                                  contentItem['content'],
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              );
-                            } else {
-                              return SizedBox.shrink();
-                            }
-                          }).toList(),
-                        ],
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Text(
+                              article.title,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            ...jsonDecode(article.content).map<Widget>((contentItem) {
+                              if (contentItem['type'] == 'image') {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                  child: Image.network(
+                                    contentItem['content'],
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              } else if (contentItem['type'] == 'paragraph') {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                  child: SelectableText(
+                                    contentItem['content'],
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                );
+                              } else {
+                                return SizedBox.shrink();
+                              }
+                            }).toList(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
