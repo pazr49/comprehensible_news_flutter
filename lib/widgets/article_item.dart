@@ -8,74 +8,81 @@ class ArticleItem extends StatelessWidget {
   ArticleItem({required this.article});
 
   String getFlagEmoji(String languageCode) {
-  switch (languageCode) {
-    case 'Spanish':
-      return '🇨🇴'; // Colombian flag for Spanish
-    case 'English':
-      return '🇬🇧'; // English flag
-    case 'French':
-      return '🇫🇷'; // French flag
-    // Add more cases as needed
-    default:
-      return '🏳️'; // Default flag
+    switch (languageCode) {
+      case 'es':
+        return '🇨🇴'; // Colombian flag for Spanish
+      case 'en':
+        return '🇬🇧'; // English flag
+      case 'fr':
+        return '🇫🇷'; // French flag
+      default:
+        return '🏳️'; // Default flag
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // Navigate to article detail
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ArticleDetailScreen(articleID: article.articleID),
+            builder: (context) => ArticleDetailScreen(
+              groupID: article.articleGroupID,
+              targetLanguage: article.targetLanguage,
+              targetLevel: article.targetLevel,
+            ),
           ),
         );
       },
       child: Card(
-        margin: EdgeInsets.all(10),
+        margin: EdgeInsets.zero, // Remove margin to prevent overflow
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to fill cross axis
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-              child: Image.network(
-                article.imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Text(
-                article.title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            AspectRatio(
+              aspectRatio: 16 / 9, // Maintain aspect ratio
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                child: Image.network(
+                  article.imageUrl,
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: Text(
-                'Language: ${getFlagEmoji(article.targetLanguage)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: Text(
-                'Level: ${article.targetLevel}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      article.title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Language: ${getFlagEmoji(article.targetLanguage)}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      'Level: ${article.targetLevel}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

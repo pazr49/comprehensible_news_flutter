@@ -27,7 +27,7 @@
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart",
-            "toolArgs": ["--dart-define=BASE_URL=http://localhost:5000/"]
+            "toolArgs": ["--dart-define=BASE_URL=http://192.168.1.152:5000/"]
         },
         {
             "name": "flutter_application_4 (production)",

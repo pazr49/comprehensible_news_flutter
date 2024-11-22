@@ -1,90 +1,86 @@
 import 'package:flutter/material.dart';
 import '../models/article.dart';
-import '../widgets/article_item.dart';
+import '../widgets/article_grid.dart';
+import '../widgets/filter_dialog.dart';
 import '../services/api_service.dart';
+import '../constants/styles.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String? selectedLevel;
-  String? selectedLanguage;
-  Future<List<Article>>? articlesFuture;
+  String? _selectedLevel = 'A1';
+  String? _selectedLanguage = 'en';
+  late Future<List<Article>> _articlesFuture;
+  List<Article> _allArticles = [];
+  List<Article> _filteredArticles = [];
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    articlesFuture = ApiService.fetchArticles();
+    _articlesFuture = _fetchArticles();
   }
 
-  void _openFilterDialog() async {
-    final result = await showDialog<Map<String, String?>>(
-      context: context,
-      builder: (context) {
-        String? level = selectedLevel;
-        String? language = selectedLanguage;
-        return AlertDialog(
-          title: Text('Filter Articles'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Level'),
-                items: ['A1', 'A2', 'B1']
-                    .map((lvl) => DropdownMenuItem(
-                          value: lvl,
-                          child: Text(lvl),
-                        ))
-                    .toList(),
-                value: level,
-                onChanged: (value) {
-                  level = value;
-                },
-              ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Language'),
-                items: ['Spanish', 'French']
-                    .map((lang) => DropdownMenuItem(
-                          value: lang,
-                          child: Text(lang),
-                        ))
-                    .toList(),
-                value: language,
-                onChanged: (value) {
-                  language = value;
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog without changes
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop({'level': level, 'language': language});
-              },
-              child: Text('Apply'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
+  Future<List<Article>> _fetchArticles() async {
+    try {
+      final articles = await ApiService.fetchArticles(_selectedLanguage!, _selectedLevel!);
       setState(() {
-        selectedLevel = result['level'];
-        selectedLanguage = result['language'];
+        _allArticles = articles;
+        _filteredArticles = articles;
       });
+      return articles;
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error loading articles';
+      });
+      return [];
     }
   }
+
+void _openFilterDialog() async {
+  final result = await showDialog<Map<String, String?>>(
+    context: context,
+    builder: (context) => FilterDialog(
+      selectedLevel: _selectedLevel,
+      selectedLanguage: _selectedLanguage,
+    ),
+  );
+
+  if (result != null) {
+    setState(() {
+      _selectedLevel = result['level'];
+      _selectedLanguage = result['language'];
+      // Fetch articles with the new filters
+      _articlesFuture = _fetchArticles();
+    });
+  }
+}
+
+  void _applyFilters() {
+    setState(() {
+      _filteredArticles = _allArticles.where((article) {
+        final matchesLevel =
+            _selectedLevel == null || article.targetLevel == _selectedLevel;
+        final matchesLanguage = _selectedLanguage == null ||
+            article.targetLanguage == _selectedLanguage;
+        return matchesLevel && matchesLanguage;
+      }).toList();
+    });
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _selectedLevel = null;
+      _selectedLanguage = null;
+      _filteredArticles = _allArticles;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -92,67 +88,36 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Articles'),
         actions: [
-          if (selectedLevel != null || selectedLanguage != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Center(
-                child: Text(
-                  '${selectedLevel ?? ''} ${selectedLanguage ?? ''}'.trim(),
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
           IconButton(
-            icon: Icon(Icons.filter_list),
+            icon: const Icon(Icons.filter_list),
             onPressed: _openFilterDialog,
           ),
         ],
       ),
-      body: FutureBuilder<List<Article>>(
-        future: articlesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Article> articles = snapshot.data!;
-
-            // Apply filters if any
-            if (selectedLevel != null || selectedLanguage != null) {
-              articles = articles.where((article) {
-                final matchesLevel = selectedLevel == null || article.targetLevel == selectedLevel;
-                final matchesLanguage = selectedLanguage == null || article.targetLanguage == selectedLanguage;
-                return matchesLevel && matchesLanguage;
-              }).toList();
-            }
-
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                int columns = (constraints.maxWidth / 360).floor();
-                columns = columns > 1 ? columns : 1;
-                double aspectRatio = 1;
-
-                return GridView.builder(
-                  padding: const EdgeInsets.all(10),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    childAspectRatio: aspectRatio,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: articles.length,
-                  itemBuilder: (context, index) {
-                    return AspectRatio(
-                      aspectRatio: aspectRatio,
-                      child: ArticleItem(article: articles[index]),
-                    );
-                  },
-                );
+      body: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder<List<Article>>(
+              future: _articlesFuture,
+              builder: (context, snapshot) {
+                if (_errorMessage != null) {
+                  return Center(
+                    child: Text(
+                      _errorMessage!,
+                      style: errorTextStyle,
+                    ),
+                  );
+                } else if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasData) {
+                  return ArticleGrid(articles: snapshot.data!);
+                } else {
+                  return const Center(child: Text('No articles found'));
+                }
               },
-            );
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading articles'));
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
