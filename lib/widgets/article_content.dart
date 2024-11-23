@@ -17,12 +17,14 @@ class ArticleContent extends StatelessWidget {
         ),
         child: CustomScrollView(
           slivers: [
-            SliverAppBar(
-              floating: true,
-              snap: true,
-              backgroundColor: backgroundColor,
-              title: Text(article.title),
-              centerTitle: true,
+            SliverToBoxAdapter(
+              child: Text(
+                article.title,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             SliverToBoxAdapter(
               child: AspectRatio(
@@ -49,7 +51,20 @@ class ArticleContent extends StatelessWidget {
                             fit: BoxFit.cover,
                           ),
                         );
-                      } else if (contentItem.type == 'paragraph') {
+                      } 
+                      else if (contentItem.type == 'header') {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: SelectableText(
+                            contentItem.content,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      } 
+                      else if (contentItem.type == 'paragraph') {
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10.0),
                           child: SelectableText(
@@ -62,6 +77,14 @@ class ArticleContent extends StatelessWidget {
                       }
                     }).toList(),
                   ],
+                ),
+              ),
+            ),
+                        SliverToBoxAdapter(
+              child: SelectableText(
+                'Source: ${article.url}',
+                style: const TextStyle(
+                  fontSize: 16,
                 ),
               ),
             ),

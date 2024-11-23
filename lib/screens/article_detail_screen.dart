@@ -79,16 +79,28 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
             ? Center(child: Text(_errorMessage!))
             : articles.isEmpty
                 ? const Center(child: CircularProgressIndicator())
-                : Column(
-                    children: [
-                      LevelTabs(
-                        articles: articles,
-                        currentIndex: _currentIndex,
-                        onTabSelected: (int idx) {
-                          _pageController.jumpToPage(idx);
-                        },
+                : CustomScrollView(
+                    slivers: [
+                      const SliverAppBar(
+                        floating: true,
+                        snap: true,
+                        backgroundColor: backgroundColor,
+                        centerTitle: true,
                       ),
-                      Expanded(
+                      SliverToBoxAdapter(
+                        child: LevelTabs(
+                          articles: articles,
+                          currentIndex: _currentIndex,
+                          onTabSelected: (index) {
+                            _pageController.animateToPage(
+                              index,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                        ),
+                      ),
+                      SliverFillRemaining(
                         child: PageView.builder(
                           controller: _pageController,
                           itemCount: articles.length,

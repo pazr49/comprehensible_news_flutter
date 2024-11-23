@@ -5,6 +5,7 @@ class ArticleContent {
   ArticleContent({
     required this.content,
     required this.type,
+
   });
 
   factory ArticleContent.fromJson(Map<String, dynamic> json) {
