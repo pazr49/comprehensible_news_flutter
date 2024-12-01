@@ -1,3 +1,5 @@
+// ArticleGrid.dart
+
 import 'package:flutter/material.dart';
 import '../models/article.dart';
 import 'article_item.dart';
@@ -12,7 +14,6 @@ class ArticleGrid extends StatelessWidget {
     // Define desired min and max item widths
     const double minItemWidth = 350;
     const double maxItemWidth = 350;
-    const double aspectRatio = 1; // height = width * aspectRatio
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -35,7 +36,7 @@ class ArticleGrid extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
-            childAspectRatio: aspectRatio,
+            childAspectRatio: 16 / 9, // Set aspect ratio to 16:9
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),

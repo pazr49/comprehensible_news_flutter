@@ -56,4 +56,25 @@ static Future<List<Article>> fetchArticlesByGroupID(String articleGroupID, Strin
     throw Exception('Failed to load article');
   }
 }
+
+// fecth articles by tag 
+static Future<List<Article>> fetchArticlesByTag(String tag, String language) async {
+  final response = await http.get(Uri.parse('${Constants.baseUrl}/articles_by_tag?language=$language&tag=$tag'));
+
+  if (response.statusCode == 200) {
+    try {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      List<Article> articles = jsonResponse.map((dynamic item) => Article.fromJson(item)).toList();
+      return articles;
+    } catch (e) {
+      print('Error fetching article: $e');
+      throw Exception('Failed to load article');
+    }
+  } else {
+    print('Failed to load article. Status code: ${response.statusCode}');
+    throw Exception('Failed to load article');
+  }
 }
+}
+
+

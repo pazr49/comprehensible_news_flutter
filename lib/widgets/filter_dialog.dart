@@ -5,10 +5,10 @@ class FilterDialog extends StatefulWidget {
   final String? selectedLanguage;
 
   const FilterDialog({
-    Key? key,
+    super.key,
     this.selectedLevel,
     this.selectedLanguage,
-  }) : super(key: key);
+  });
 
   @override
   _FilterDialogState createState() => _FilterDialogState();
@@ -17,6 +17,12 @@ class FilterDialog extends StatefulWidget {
 class _FilterDialogState extends State<FilterDialog> {
   String? _level;
   String? _language;
+
+  final Map<String, String> _languageMap = {
+    'en': 'English',
+    'es': 'Spanish',
+    'fr': 'French',
+  };
 
   @override
   void initState() {
@@ -28,32 +34,17 @@ class _FilterDialogState extends State<FilterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Filter Articles'),
+      title: const Text('Select a language'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Level'),
-              items: ['A1', 'A2', 'B1']
-                  .map((lvl) => DropdownMenuItem(
-                        value: lvl,
-                        child: Text(lvl),
-                      ))
-                  .toList(),
-              value: _level,
-              onChanged: (value) {
-                setState(() {
-                  _level = value;
-                });
-              },
-            ),
-            DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Language'),
-              items: ['es', 'fr', 'en']
-                  .map((lang) => DropdownMenuItem(
-                        value: lang,
-                        child: Text(lang),
+              items: _languageMap.entries
+                  .map((entry) => DropdownMenuItem(
+                        value: entry.key,
+                        child: Text(entry.value),
                       ))
                   .toList(),
               value: _language,
@@ -76,7 +67,6 @@ class _FilterDialogState extends State<FilterDialog> {
         ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop({
-              'level': _level,
               'language': _language,
             });
           },

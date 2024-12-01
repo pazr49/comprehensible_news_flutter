@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "154691500692",
+    "project_id": "comprehensible-news",
+    "storage_bucket": "comprehensible-news.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154691500692:android:df256b9d2580b72a405281",
+        "android_client_info": {
+          "package_name": "com.paz.comprehensiblenews"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfFEG_eP6sKEhUjf5p0JhZC_boZWxxzKk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

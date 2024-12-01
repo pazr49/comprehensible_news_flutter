@@ -7,11 +7,11 @@ class LevelTabs extends StatelessWidget {
   final Function(int) onTabSelected;
 
   const LevelTabs({
-    Key? key,
+    super.key,
     required this.articles,
     required this.currentIndex,
     required this.onTabSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

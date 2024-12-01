@@ -3,7 +3,7 @@ import '../models/article.dart';
 import '../widgets/article_grid.dart';
 import '../widgets/filter_dialog.dart';
 import '../services/api_service.dart';
-import '../constants/styles.dart';
+import '../widgets/category_buttons.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,10 +14,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _selectedLevel = 'A1';
-  String? _selectedLanguage = 'en';
+  String _selectedLanguage = 'en'; // Default to English
+  String _selectedCategory = 'todays-news'; // Default selected category
   late Future<List<Article>> _articlesFuture;
   List<Article> _allArticles = [];
-  List<Article> _filteredArticles = [];
   String? _errorMessage;
 
   @override
@@ -28,10 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<List<Article>> _fetchArticles() async {
     try {
-      final articles = await ApiService.fetchArticles(_selectedLanguage!, _selectedLevel!);
+      final articles = await ApiService.fetchArticlesByTag(_selectedCategory, _selectedLanguage);
       setState(() {
         _allArticles = articles;
-        _filteredArticles = articles;
       });
       return articles;
     } catch (e) {
@@ -42,60 +41,80 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-void _openFilterDialog() async {
-  final result = await showDialog<Map<String, String?>>(
-    context: context,
-    builder: (context) => FilterDialog(
-      selectedLevel: _selectedLevel,
-      selectedLanguage: _selectedLanguage,
-    ),
-  );
-
-  if (result != null) {
+  void _onCategorySelected(String selectedCategory) {
     setState(() {
-      _selectedLevel = result['level'];
-      _selectedLanguage = result['language'];
-      // Fetch articles with the new filters
+      _selectedCategory = selectedCategory;
       _articlesFuture = _fetchArticles();
     });
   }
-}
 
-  void _applyFilters() {
-    setState(() {
-      _filteredArticles = _allArticles.where((article) {
-        final matchesLevel =
-            _selectedLevel == null || article.targetLevel == _selectedLevel;
-        final matchesLanguage = _selectedLanguage == null ||
-            article.targetLanguage == _selectedLanguage;
-        return matchesLevel && matchesLanguage;
-      }).toList();
-    });
+  void _openFilterDialog() async {
+    final result = await showDialog<Map<String, String?>>(
+      context: context,
+      builder: (context) => FilterDialog(
+        selectedLevel: _selectedLevel,
+        selectedLanguage: _selectedLanguage,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedLevel = result['level'];
+        _selectedLanguage = result['language'] ?? _selectedLanguage;
+        _articlesFuture = _fetchArticles();
+      });
+    }
   }
 
-  void _clearFilters() {
-    setState(() {
-      _selectedLevel = null;
-      _selectedLanguage = null;
-      _filteredArticles = _allArticles;
-    });
+  String getFlagAsset(String languageCode) {
+    // Map the selected language code to the corresponding flag asset
+    switch (languageCode) {
+      case 'es':
+        return 'assets/flags/flag-co.png'; // Spanish flag
+      case 'en':
+        return 'assets/flags/flag-gb.png'; // English flag
+      case 'fr':
+        return 'assets/flags/flag-fr.png'; // French flag
+      default:
+        return 'assets/flags/default.png'; // Default flag (optional)
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Articles'),
+        title: const Text(
+          'Discover',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _openFilterDialog,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Center(
+              child: Image.asset(
+                getFlagAsset(_selectedLanguage), // Get the flag image for the selected language
+                height: 24,
+                width: 32,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
+          // Add the category buttons at the top of the feed
+          CategoryButtons(
+            initialSelectedCategory: _selectedCategory,
+            onCategorySelected: _onCategorySelected, // Pass the callback function
+          ),
+          const SizedBox(height: 10), // Add spacing between buttons and feed
           Expanded(
             child: FutureBuilder<List<Article>>(
               future: _articlesFuture,
@@ -104,12 +123,12 @@ void _openFilterDialog() async {
                   return Center(
                     child: Text(
                       _errorMessage!,
-                      style: errorTextStyle,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
                     ),
                   );
                 } else if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasData) {
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   return ArticleGrid(articles: snapshot.data!);
                 } else {
                   return const Center(child: Text('No articles found'));
@@ -118,6 +137,11 @@ void _openFilterDialog() async {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openFilterDialog,
+        child: const Icon(Icons.filter_list),
+        backgroundColor: Colors.blueAccent,
       ),
     );
   }

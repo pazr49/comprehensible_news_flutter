@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/article.dart';
-import '../constants/colors.dart';
 
 class ArticleContent extends StatelessWidget {
   final Article article;
 
-  const ArticleContent({Key? key, required this.article}) : super(key: key);
+  const ArticleContent({super.key, required this.article});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           minWidth: 600,  // Minimum width
           maxWidth: 800, // Maximum width
         ),
@@ -75,7 +74,7 @@ class ArticleContent extends StatelessWidget {
                       } else {
                         return const SizedBox.shrink();
                       }
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

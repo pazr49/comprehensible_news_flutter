@@ -10,9 +10,9 @@ class ArticleItem extends StatelessWidget {
   String getFlagEmoji(String languageCode) {
     switch (languageCode) {
       case 'es':
-        return '🇨🇴'; // Colombian flag for Spanish
+        return '🇪🇸'; // Spanish flag
       case 'en':
-        return '🇬🇧'; // English flag
+        return '🇬🇧'; // British flag for English
       case 'fr':
         return '🇫🇷'; // French flag
       default:
@@ -36,58 +36,95 @@ class ArticleItem extends StatelessWidget {
           ),
         );
       },
-      child: Card(
-        margin: EdgeInsets.zero, // Remove margin to prevent overflow
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to fill cross axis
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9, // Maintain aspect ratio
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                child: Image.network(
-                  article.imageUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      article.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      'Language: ${getFlagEmoji(article.targetLanguage)}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      'Level: ${article.targetLevel}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
           ],
         ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background Image
+              Image.network(
+                article.imageUrl,
+                fit: BoxFit.cover,
+              ),
+              // Gradient Overlay for Contrast
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(1), // Darker at the bottom
+                        Colors.black.withOpacity(0.5), // Mid-opacity
+                        Colors.transparent, // Fades to transparent
+                      ],
+                      stops: [0.1, 0.4, 1.0], // Control where the colors change
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                ),
+              ),
+              // Article Info
+              Positioned(
+                bottom: 15,
+                left: 15,
+                right: 15,
+                child: Text(
+                  article.title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black54,
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Language and Level Badges
+              Positioned(
+                top: 15,
+                right: 15,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _buildBadge(getFlagEmoji(article.targetLanguage)),
+                    SizedBox(height: 5),
+                    _buildBadge('Level ${article.targetLevel}'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black45,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
   }

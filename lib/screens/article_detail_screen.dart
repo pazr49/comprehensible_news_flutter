@@ -12,11 +12,11 @@ class ArticleDetailScreen extends StatefulWidget {
   final String targetLevel;
 
   const ArticleDetailScreen({
-    Key? key,
+    super.key,
     required this.groupID,
     required this.targetLanguage,
     required this.targetLevel,
-  }) : super(key: key);
+  });
 
   @override
   _ArticleDetailScreenState createState() => _ArticleDetailScreenState();
